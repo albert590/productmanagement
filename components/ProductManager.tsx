@@ -6,7 +6,7 @@ export default function ProductManager() {
 
   const {
     products,
-    removeProduct,
+    deleteProduct,
   } = useProducts();
 
 
@@ -79,7 +79,7 @@ export default function ProductManager() {
 
                 <button
                   onClick={() =>
-                    removeProduct(product.id)
+                    deleteProduct(product.id)
                   }
                   style={{
                     marginLeft: "10px",

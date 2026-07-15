@@ -1,123 +1,245 @@
 "use client";
 
-import { useState } from "react";
-import { useProducts } from "@/context/ProductContext";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+
+import { Product } from "@/types/product";
+
+import {
+  getProducts,
+  createProduct as apiCreateProduct,
+  updateProduct as apiUpdateProduct,
+  deleteProduct as apiDeleteProduct,
+} from "@/services/api";
 
 
-export default function ProductForm() {
+interface ProductContextType {
 
-  const { createProduct } = useProducts();
+  products: Product[];
+
+  loading: boolean;
+
+  createProduct: (
+    product: Omit<Product, "id">
+  ) => Promise<void>;
+
+  updateProduct: (
+    id: number,
+    product: Partial<Product>
+  ) => Promise<void>;
+
+  deleteProduct: (
+    id: number
+  ) => Promise<void>;
+
+}
 
 
-  const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("");
-  const [description, setDescription] = useState("");
+const ProductContext = createContext<
+  ProductContextType | undefined
+>(undefined);
 
 
 
-  async function handleSubmit(
-    e: React.FormEvent
-  ) {
+export function ProductProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
 
-    e.preventDefault();
+
+  const [products, setProducts] = useState<Product[]>([]);
+
+  const [loading, setLoading] = useState(true);
 
 
-    if (!title || !price || !category) {
-      alert("Fill all required fields");
-      return;
+
+  useEffect(() => {
+
+    async function loadProducts() {
+
+      try {
+
+        const data = await getProducts();
+
+        setProducts(data);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load products",
+          error
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
     }
 
 
-    await createProduct({
+    loadProducts();
 
-      title,
-
-      price: Number(price),
-
-      category,
-
-      description,
-
-      thumbnail: "",
-
-      images: [],
-
-      brand: "",
-
-      stock: 0,
-
-      rating: 0,
-
-      discountPercentage: 0,
-
-    });
+  }, []);
 
 
-    setTitle("");
-    setPrice("");
-    setCategory("");
-    setDescription("");
 
-    alert("Product Added Successfully");
+
+  async function createProduct(
+    product: Omit<Product, "id">
+  ) {
+
+    try {
+
+      const newProduct =
+        await apiCreateProduct(product);
+
+
+      setProducts((previous) => [
+        ...previous,
+        newProduct,
+      ]);
+
+
+    } catch (error) {
+
+      console.error(
+        "Create product failed",
+        error
+      );
+
+      throw error;
+
+    }
 
   }
 
 
 
+
+  async function updateProduct(
+    id: number,
+    product: Partial<Product>
+  ) {
+
+
+    try {
+
+      const updatedProduct =
+        await apiUpdateProduct(
+          id,
+          product
+        );
+
+
+      setProducts((previous) =>
+        previous.map((item) =>
+          item.id === id
+            ? updatedProduct
+            : item
+        )
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Update product failed",
+        error
+      );
+
+      throw error;
+
+    }
+
+  }
+
+
+
+
+  async function deleteProduct(
+    id: number
+  ) {
+
+
+    try {
+
+      await apiDeleteProduct(id);
+
+
+      setProducts((previous) =>
+        previous.filter(
+          (item) =>
+            item.id !== id
+        )
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Delete product failed",
+        error
+      );
+
+      throw error;
+
+    }
+
+  }
+
+
+
+
+
   return (
 
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        display:"flex",
-        flexDirection:"column",
-        gap:"10px",
-        maxWidth:"400px",
+    <ProductContext.Provider
+      value={{
+        products,
+        loading,
+        createProduct,
+        updateProduct,
+        deleteProduct,
       }}
     >
 
-      <h2>
-        Add New Product
-      </h2>
+      {children}
 
-
-      <input
-        placeholder="Product Name"
-        value={title}
-        onChange={(e)=>setTitle(e.target.value)}
-      />
-
-
-      <input
-        placeholder="Price"
-        type="number"
-        value={price}
-        onChange={(e)=>setPrice(e.target.value)}
-      />
-
-
-      <input
-        placeholder="Category"
-        value={category}
-        onChange={(e)=>setCategory(e.target.value)}
-      />
-
-
-      <textarea
-        placeholder="Description"
-        value={description}
-        onChange={(e)=>setDescription(e.target.value)}
-      />
-
-
-      <button type="submit">
-        Add Product
-      </button>
-
-
-    </form>
+    </ProductContext.Provider>
 
   );
+
+}
+
+
+
+
+
+export function useProducts() {
+
+
+  const context =
+    useContext(ProductContext);
+
+
+
+  if (!context) {
+
+    throw new Error(
+      "useProducts must be used inside ProductProvider"
+    );
+
+  }
+
+
+  return context;
 
 }

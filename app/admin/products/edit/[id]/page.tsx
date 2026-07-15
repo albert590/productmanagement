@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useProducts } from "@/context/ProductContext";
 import { Product } from "@/types/product";
-import { getProductById } from "@/services/productService";
+import {getProductById} from "@/services/api";
+//import { getProductById } from "@/services/productService";
 
 
 export default function EditProductPage(){
