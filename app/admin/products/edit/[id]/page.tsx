@@ -15,7 +15,7 @@ export default function EditProductPage(){
 
   const {
     products,
-    editProduct,
+  updateProduct
   } = useProducts();
 
 
@@ -80,7 +80,7 @@ export default function EditProductPage(){
 
     if (!activeProduct) return;
 
-    await editProduct(activeProduct.id, {
+    await updateProduct(activeProduct.id, {
       title: form.title,
       price: Number(form.price),
       category: form.category,
