@@ -9,7 +9,7 @@ export default function AdminProductsPage() {
 
   const {
     products,
-    removeProduct,
+    deleteProduct,
     loading,
   } = useProducts();
 
@@ -34,7 +34,7 @@ export default function AdminProductsPage() {
 
     try {
 
-      await removeProduct(id);
+      await deleteProduct(id);
 
       setMessage(
         "Product deleted successfully"
