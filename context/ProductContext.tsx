@@ -12,36 +12,36 @@ import { Product } from "@/types/product";
 
 import {
   getProducts,
-  deleteProduct,
-  editProduct as updateProduct,
-  addProduct as createProduct,
-} from "@/services/productService";
+  createProduct as apiCreateProduct,
+  updateProduct as apiUpdateProduct,
+  deleteProduct as apiDeleteProduct,
+} from "@/services/api";
 
 
-type ProductContextType = {
+interface ProductContextType {
   products: Product[];
   loading: boolean;
 
-  addProduct: (
+  createProduct: (
     product: Omit<Product, "id">
   ) => Promise<void>;
 
-  editProduct: (
+  updateProduct: (
     id: number,
     product: Partial<Product>
   ) => Promise<void>;
 
-  removeProduct: (
+  deleteProduct: (
     id: number
   ) => Promise<void>;
-
-  refreshProducts: () => Promise<void>;
-};
+}
 
 
-const ProductContext = createContext<ProductContextType | undefined>(
-  undefined
-);
+const ProductContext =
+  createContext<ProductContextType | undefined>(
+    undefined
+  );
+
 
 
 export function ProductProvider({
@@ -50,44 +50,51 @@ export function ProductProvider({
   children: ReactNode;
 }) {
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] =
+    useState<Product[]>([]);
 
-
-
-  // Load products
-  const refreshProducts = async () => {
-
-    try {
-
-      setLoading(true);
-
-      const data = await getProducts();
-
-      setProducts(data);
-
-
-    } catch (error) {
-
-      console.error(
-        "Error loading products:",
-        error
-      );
-
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  };
+  const [loading, setLoading] =
+    useState(true);
 
 
 
   useEffect(() => {
 
-    refreshProducts();
+    async function loadProducts() {
+
+      try {
+
+        console.log("Fetching products...");
+
+        const data = await getProducts();
+
+        console.log("API RESPONSE:", data);
+
+
+        setProducts(data);
+
+
+      } catch (error) {
+
+        console.error(
+          "API ERROR:",
+          error
+        );
+
+
+      } finally {
+
+        console.log("Finished loading");
+
+        setLoading(false);
+
+      }
+
+    }
+
+
+    loadProducts();
+
 
   }, []);
 
@@ -95,115 +102,65 @@ export function ProductProvider({
 
 
 
-  // Add product
-  const addProduct = async (
+  async function createProduct(
     product: Omit<Product, "id">
-  ) => {
+  ) {
 
-    try {
-
-      const newProduct =
-        await createProduct(product);
+    const newProduct =
+      await apiCreateProduct(product);
 
 
-      setProducts((prev) => [
-        newProduct,
-        ...prev,
-      ]);
+    setProducts((prev) => [
+      ...prev,
+      newProduct,
+    ]);
 
-
-    } catch (error) {
-
-      console.error(
-        "Error adding product:",
-        error
-      );
-
-      throw error;
-
-    }
-
-  };
+  }
 
 
 
 
 
+  async function updateProduct(
+    id:number,
+    product:Partial<Product>
+  ){
 
-  // Edit product
-  const editProduct = async (
-    id: number,
-    product: Partial<Product>
-  ) => {
-
-    try {
-
-      const updatedProduct =
-        await updateProduct(
-          id,
-          product
-        );
-
-
-      setProducts((prev) =>
-        prev.map((item) =>
-          item.id === id
-            ? updatedProduct
-            : item
-        )
+    const updated =
+      await apiUpdateProduct(
+        id,
+        product
       );
 
 
-    } catch (error) {
+    setProducts((prev)=>
+      prev.map((item)=>
+        item.id === id
+        ? updated
+        : item
+      )
+    );
 
-      console.error(
-        "Error updating product:",
-        error
-      );
-
-      throw error;
-
-    }
-
-  };
+  }
 
 
 
 
 
+  async function deleteProduct(
+    id:number
+  ){
+
+    await apiDeleteProduct(id);
 
 
-  // Delete product
-  const removeProduct = async (
-    id: number
-  ) => {
+    setProducts((prev)=>
+      prev.filter(
+        item=>item.id !== id
+      )
+    );
 
-    try {
-
-      await deleteProduct(id);
-
-
-      setProducts((prev) =>
-        prev.filter(
-          (product) =>
-            product.id !== id
-        )
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        "Error deleting product:",
-        error
-      );
-
-      throw error;
-
-    }
-
-  };
-
+  }
 
 
 
@@ -215,10 +172,9 @@ export function ProductProvider({
       value={{
         products,
         loading,
-        addProduct,
-        editProduct,
-        removeProduct,
-        refreshProducts,
+        createProduct,
+        updateProduct,
+        deleteProduct,
       }}
     >
 
@@ -234,15 +190,13 @@ export function ProductProvider({
 
 
 
-
-
-export function useProducts() {
+export function useProducts(){
 
   const context =
     useContext(ProductContext);
 
 
-  if (!context) {
+  if(!context){
 
     throw new Error(
       "useProducts must be used inside ProductProvider"

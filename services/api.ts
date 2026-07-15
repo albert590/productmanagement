@@ -3,6 +3,7 @@ import { Product, ProductsResponse } from "@/types/product";
 const BASE_URL = "https://dummyjson.com/products";
 
 
+// GET ALL PRODUCTS
 export async function getProducts(): Promise<Product[]> {
   const response = await fetch(BASE_URL);
 
@@ -16,6 +17,7 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 
+// GET PRODUCT BY ID
 export async function getProductById(
   id: number
 ): Promise<Product> {
@@ -32,8 +34,8 @@ export async function getProductById(
 }
 
 
-
-export async function addProduct(
+// CREATE PRODUCT
+export async function createProduct(
   product: Omit<Product, "id">
 ): Promise<Product> {
 
@@ -50,7 +52,7 @@ export async function addProduct(
 
 
   if (!response.ok) {
-    throw new Error("Failed to add product");
+    throw new Error("Failed to create product");
   }
 
 
@@ -58,8 +60,8 @@ export async function addProduct(
 }
 
 
-
-export async function editProduct(
+// UPDATE PRODUCT
+export async function updateProduct(
   id: number,
   product: Partial<Product>
 ): Promise<Product> {
@@ -85,7 +87,7 @@ export async function editProduct(
 }
 
 
-
+// DELETE PRODUCT
 export async function deleteProduct(
   id: number
 ): Promise<void> {
@@ -101,4 +103,5 @@ export async function deleteProduct(
   if (!response.ok) {
     throw new Error("Failed to delete product");
   }
+
 }
