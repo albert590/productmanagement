@@ -1,44 +1,222 @@
-import Link from "next/link";
-import ProductList from "@/components/ProductList";
+"use client";
 
-export default function Home() {
+import Link from "next/link";
+import { useProducts } from "@/context/ProductContext";
+import ProductCard from "@/components/ProductCard";
+
+
+export default function HomePage() {
+
+  const { products, loading } = useProducts();
+
+
+
+  const featuredProducts =
+    products.slice(0, 8);
+
+
+
   return (
-    <section className="space-y-8">
-      <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white shadow-lg">
-        <p className="mb-3 text-sm uppercase tracking-[0.3em] text-blue-100">
-          Product Management System
-        </p>
-        <h1 className="text-4xl font-bold">
-          Manage your inventory, catalog, and storefront in one place.
-        </h1>
-        <p className="mt-4 max-w-2xl text-blue-100">
-          Browse your products, inspect details, and access the admin dashboard to keep everything organized.
-        </p>
-        <div className="mt-6 flex flex-wrap gap-3">
+
+    <main>
+
+
+      {/* Hero Section */}
+
+      <section
+        className="
+          rounded-3xl
+          bg-gradient-to-r
+          from-teal-500
+          to-cyan-500
+          text-white
+          p-10
+          md:p-16
+          shadow-xl
+          mb-12
+        "
+      >
+
+
+        <div className="max-w-3xl">
+
+
+          <h1
+            className="
+              text-4xl
+              md:text-6xl
+              font-bold
+              leading-tight
+            "
+          >
+            Shop Smarter With Our Product Management System
+          </h1>
+
+
+
+          <p
+            className="
+              mt-5
+              text-lg
+              text-cyan-50
+            "
+          >
+            Discover quality products, manage your inventory,
+            and enjoy a simple online shopping experience.
+          </p>
+
+
+
+
+          <div className="flex gap-4 mt-8">
+
+
+            <Link
+              href="/products"
+              className="
+                bg-white
+                text-teal-600
+                px-6
+                py-3
+                rounded-full
+                font-semibold
+                hover:scale-105
+                transition
+              "
+            >
+              Browse Products
+            </Link>
+
+
+
+
+            <Link
+              href="/register"
+              className="
+                border
+                border-white
+                px-6
+                py-3
+                rounded-full
+                font-semibold
+                hover:bg-white
+                hover:text-teal-600
+                transition
+              "
+            >
+              Create Account
+            </Link>
+
+
+          </div>
+
+
+        </div>
+
+
+      </section>
+
+
+
+
+
+      {/* Featured Products */}
+
+
+      <section>
+
+
+        <div className="
+          flex
+          justify-between
+          items-center
+          mb-6
+        ">
+
+
+          <h2
+            className="
+              text-3xl
+              font-bold
+              text-slate-900
+            "
+          >
+            Featured Products
+          </h2>
+
+
+
           <Link
             href="/products"
-            className="rounded-lg bg-white px-4 py-2 font-semibold text-blue-700 hover:bg-blue-50"
+            className="
+              text-teal-600
+              font-semibold
+            "
           >
-            Browse Products
+            View All →
           </Link>
-          <Link
-            href="/admin"
-            className="rounded-lg border border-white/40 px-4 py-2 font-semibold text-white hover:bg-white/10"
-          >
-            Open Admin Panel
-          </Link>
-        </div>
-      </div>
 
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">Featured Products</h2>
-          <Link href="/products" className="text-sm font-medium text-blue-600 hover:underline">
-            View all
-          </Link>
+
         </div>
-        <ProductList />
-      </div>
-    </section>
+
+
+
+
+
+        {
+          loading ? (
+
+            <div
+              className="
+                text-center
+                py-10
+              "
+            >
+
+              Loading products...
+
+            </div>
+
+
+          ) : (
+
+
+            <div
+              className="
+                grid
+                grid-cols-1
+                sm:grid-cols-2
+                lg:grid-cols-4
+                gap-6
+              "
+            >
+
+              {
+                featuredProducts.map(
+                  (product)=>(
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                    />
+                  )
+                )
+              }
+
+
+            </div>
+
+
+          )
+        }
+
+
+
+      </section>
+
+
+
+    </main>
+
   );
+
 }

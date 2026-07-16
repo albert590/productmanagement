@@ -54,7 +54,7 @@ export default function RegisterPage() {
     if (success) {
 
       alert(
-        "Registration successful. Please login."
+        "Account created successfully"
       );
 
       router.push("/login");
@@ -63,7 +63,7 @@ export default function RegisterPage() {
     } else {
 
       alert(
-        "Email or username already exists."
+        "Email or username already exists"
       );
 
     }
@@ -76,82 +76,229 @@ export default function RegisterPage() {
 
   return (
 
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div
+      className="
+        min-h-screen
+        flex
+        items-center
+        justify-center
+        bg-gradient-to-br
+        from-slate-50
+        via-white
+        to-cyan-100
+      "
+    >
 
 
       <form
+
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+
+        className="
+          bg-white
+          w-full
+          max-w-md
+          p-8
+          rounded-2xl
+          shadow-xl
+        "
+
       >
 
 
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Create Account
-        </h1>
+
+        <div className="text-center mb-8">
+
+
+          <div
+            className="
+              mx-auto
+              h-14
+              w-14
+              rounded-xl
+              bg-gradient-to-br
+              from-teal-500
+              to-cyan-500
+              flex
+              items-center
+              justify-center
+              text-white
+              text-2xl
+              font-bold
+            "
+          >
+            PM
+          </div>
+
+
+
+          <h1
+            className="
+              text-3xl
+              font-bold
+              mt-4
+              text-slate-900
+            "
+          >
+            Create Account
+          </h1>
+
+
+
+          <p className="text-slate-500 mt-2">
+            Join our shopping platform
+          </p>
+
+
+        </div>
+
+
 
 
 
         <input
+
           type="text"
+
           placeholder="Full Name"
+
           value={name}
+
           onChange={(e)=>
             setName(e.target.value)
           }
-          className="w-full border p-3 mb-4 rounded"
+
+          className="
+            w-full
+            border
+            rounded-lg
+            p-3
+            mb-4
+            outline-none
+            focus:ring-2
+            focus:ring-cyan-400
+          "
+
           required
+
         />
 
 
 
+
+
         <input
+
           type="text"
+
           placeholder="Username"
+
           value={username}
+
           onChange={(e)=>
             setUsername(e.target.value)
           }
-          className="w-full border p-3 mb-4 rounded"
+
+          className="
+            w-full
+            border
+            rounded-lg
+            p-3
+            mb-4
+            outline-none
+            focus:ring-2
+            focus:ring-cyan-400
+          "
+
           required
+
         />
 
 
 
+
+
         <input
+
           type="email"
+
           placeholder="Email"
+
           value={email}
+
           onChange={(e)=>
             setEmail(e.target.value)
           }
-          className="w-full border p-3 mb-4 rounded"
+
+          className="
+            w-full
+            border
+            rounded-lg
+            p-3
+            mb-4
+            outline-none
+            focus:ring-2
+            focus:ring-cyan-400
+          "
+
           required
+
         />
+
+
 
 
 
         <input
+
           type="password"
+
           placeholder="Password"
+
           value={password}
+
           onChange={(e)=>
             setPassword(e.target.value)
           }
-          className="w-full border p-3 mb-4 rounded"
+
+          className="
+            w-full
+            border
+            rounded-lg
+            p-3
+            mb-4
+            outline-none
+            focus:ring-2
+            focus:ring-cyan-400
+          "
+
           required
+
         />
+
+
 
 
 
         <select
+
           value={role}
+
           onChange={(e)=>
             setRole(
               e.target.value as
               "admin" | "customer"
             )
           }
-          className="w-full border p-3 mb-6 rounded"
+
+          className="
+            w-full
+            border
+            rounded-lg
+            p-3
+            mb-6
+          "
+
         >
 
           <option value="customer">
@@ -168,30 +315,70 @@ export default function RegisterPage() {
 
 
 
+
+
         <button
+
           type="submit"
-          className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700"
+
+          className="
+            w-full
+            bg-gradient-to-r
+            from-teal-500
+            to-cyan-500
+            text-white
+            py-3
+            rounded-lg
+            font-semibold
+            hover:scale-105
+            transition
+          "
+
         >
+
           Register
+
         </button>
 
 
 
-        <p className="text-center mt-4">
+
+
+        <p
+          className="
+            text-center
+            mt-6
+            text-slate-600
+          "
+        >
 
           Already have an account?
 
+
           <button
+
             type="button"
-            onClick={()=>
+
+            onClick={() =>
               router.push("/login")
             }
-            className="text-blue-600 ml-2"
+
+            className="
+              text-teal-600
+              font-semibold
+              ml-2
+            "
+
           >
+
             Login
+
           </button>
 
+
         </p>
+
+
 
 
       </form>
