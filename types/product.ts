@@ -1,20 +1,17 @@
 export interface Product {
-  id: number;
-  title: string;
-  description: string;
-  category: string;
-  price: number;
-  discountPercentage: number;
-  rating: number;
-  stock: number;
-  brand: string;
-  thumbnail: string;
-  images: string[];
-}
 
-export interface ProductsResponse {
-  products: Product[];
-  total: number;
-  skip: number;
-  limit: number;
+  _id: string;
+
+  name: string;
+
+  description: string;
+
+  price: number;
+
+  stock?: number;
+
+  category?: string;
+
+  image?: string;
+
 }

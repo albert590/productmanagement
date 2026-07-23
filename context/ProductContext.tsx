@@ -19,21 +19,24 @@ import {
 
 
 interface ProductContextType {
+
   products: Product[];
+
   loading: boolean;
 
   createProduct: (
-    product: Omit<Product, "id">
+    product: Omit<Product, "_id">
   ) => Promise<void>;
 
   updateProduct: (
-    id: number,
+    id: string,
     product: Partial<Product>
   ) => Promise<void>;
 
   deleteProduct: (
-    id: number
+    id: string
   ) => Promise<void>;
+
 }
 
 
@@ -50,60 +53,52 @@ export function ProductProvider({
   children: ReactNode;
 }) {
 
+
   const [products, setProducts] =
     useState<Product[]>([]);
+
 
   const [loading, setLoading] =
     useState(true);
 
 
 
-  useEffect(() => {
+  async function loadProducts() {
 
-    async function loadProducts() {
+    try {
 
-      try {
+      const data = await getProducts();
 
-        console.log("Fetching products...");
+      setProducts(data);
 
-        const data = await getProducts();
+    } catch(error) {
 
-        console.log("API RESPONSE:", data);
+      console.error(
+        "Loading products failed",
+        error
+      );
 
+    } finally {
 
-        setProducts(data);
-
-
-      } catch (error) {
-
-        console.error(
-          "API ERROR:",
-          error
-        );
-
-
-      } finally {
-
-        console.log("Finished loading");
-
-        setLoading(false);
-
-      }
+      setLoading(false);
 
     }
 
+  }
+
+
+
+  useEffect(() => {
 
     loadProducts();
-
 
   }, []);
 
 
 
 
-
   async function createProduct(
-    product: Omit<Product, "id">
+    product: Omit<Product, "_id">
   ) {
 
     const newProduct =
@@ -122,22 +117,23 @@ export function ProductProvider({
 
 
   async function updateProduct(
-    id:number,
-    product:Partial<Product>
-  ){
+    id: string,
+    product: Partial<Product>
+  ) {
 
-    const updated =
+
+    const updatedProduct =
       await apiUpdateProduct(
         id,
         product
       );
 
 
-    setProducts((prev)=>
-      prev.map((item)=>
-        item.id === id
-        ? updated
-        : item
+    setProducts((prev) =>
+      prev.map((item) =>
+        item._id === id
+          ? updatedProduct
+          : item
       )
     );
 
@@ -148,15 +144,17 @@ export function ProductProvider({
 
 
   async function deleteProduct(
-    id:number
-  ){
+    id: string
+  ) {
+
 
     await apiDeleteProduct(id);
 
 
-    setProducts((prev)=>
+    setProducts((prev) =>
       prev.filter(
-        item=>item.id !== id
+        (item) =>
+          item._id !== id
       )
     );
 
@@ -169,6 +167,7 @@ export function ProductProvider({
   return (
 
     <ProductContext.Provider
+
       value={{
         products,
         loading,
@@ -176,6 +175,7 @@ export function ProductProvider({
         updateProduct,
         deleteProduct,
       }}
+
     >
 
       {children}
@@ -190,13 +190,13 @@ export function ProductProvider({
 
 
 
-export function useProducts(){
+export function useProducts() {
 
   const context =
     useContext(ProductContext);
 
 
-  if(!context){
+  if (!context) {
 
     throw new Error(
       "useProducts must be used inside ProductProvider"

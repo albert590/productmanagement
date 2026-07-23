@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+
 import "./globals.css";
 
 import Layout from "@/components/Layout";
 
+import { AuthProvider } from "@/context/AuthContext";
 import { ProductProvider } from "@/context/ProductContext";
 import { CartProvider } from "@/context/CartContext";
-import { AuthProvider } from "@/context/AuthContext";
 
 
 
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 
   title: "Product Management System",
 
-  description: "Product Management System",
+  description: "E-Commerce Product Management System",
 
 };
 
@@ -35,18 +36,13 @@ export default function RootLayout({
 
     <html lang="en">
 
-
       <body>
-
 
         <AuthProvider>
 
-
           <ProductProvider>
 
-
             <CartProvider>
-
 
               <Layout>
 
@@ -54,18 +50,14 @@ export default function RootLayout({
 
               </Layout>
 
-
             </CartProvider>
 
-
           </ProductProvider>
-
 
         </AuthProvider>
 
 
       </body>
-
 
     </html>
 

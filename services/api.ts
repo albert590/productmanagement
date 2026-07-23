@@ -1,107 +1,140 @@
-import { Product, ProductsResponse } from "@/types/product";
-
-const BASE_URL = "https://dummyjson.com/products";
-
-
-// GET ALL PRODUCTS
-export async function getProducts(): Promise<Product[]> {
-  const response = await fetch(BASE_URL);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch products");
-  }
-
-  const data: ProductsResponse = await response.json();
-
-  return data.products;
-}
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://ecommerce-api-week4-1.onrender.com";
 
 
-// GET PRODUCT BY ID
-export async function getProductById(
-  id: number
-): Promise<Product> {
+// GET PRODUCTS
+export async function getProducts() {
 
   const response = await fetch(
-    `${BASE_URL}/${id}`
-  );
-
-  if (!response.ok) {
-    throw new Error("Product not found");
-  }
-
-  return response.json();
-}
-
-
-// CREATE PRODUCT
-export async function createProduct(
-  product: Omit<Product, "id">
-): Promise<Product> {
-
-  const response = await fetch(
-    `${BASE_URL}/add`,
+    `${API_URL}/products`,
     {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(product),
+      cache: "no-store",
     }
   );
 
 
+  const data = await response.json();
+
+
   if (!response.ok) {
-    throw new Error("Failed to create product");
+    throw new Error(
+      data.message || "Failed to load products"
+    );
   }
 
 
-  return response.json();
+  return data;
+
 }
+
+
+
+// CREATE PRODUCT
+export async function createProduct(product:any) {
+
+
+  const token =
+    localStorage.getItem("token");
+
+
+  const response = await fetch(
+    `${API_URL}/products`,
+    {
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json",
+
+        Authorization:
+          `Bearer ${token}`,
+      },
+
+
+      body:JSON.stringify(product),
+
+    }
+  );
+
+
+  const data =
+    await response.json();
+
+
+  if(!response.ok){
+
+    throw new Error(
+      data.message || "Create failed"
+    );
+
+  }
+
+
+  return data;
+
+}
+
 
 
 // UPDATE PRODUCT
 export async function updateProduct(
-  id: number,
-  product: Partial<Product>
-): Promise<Product> {
+id:string,
+product:any
+){
 
-  const response = await fetch(
-    `${BASE_URL}/${id}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(product),
-    }
-  );
+const token =
+localStorage.getItem("token");
 
 
-  if (!response.ok) {
-    throw new Error("Failed to update product");
-  }
+const response =
+await fetch(
+`${API_URL}/products/${id}`,
+{
+method:"PUT",
 
+headers:{
+"Content-Type":"application/json",
+Authorization:`Bearer ${token}`,
+},
 
-  return response.json();
+body:JSON.stringify(product),
+
 }
+);
+
+
+return response.json();
+
+}
+
+
 
 
 // DELETE PRODUCT
 export async function deleteProduct(
-  id: number
-): Promise<void> {
+id:string
+){
 
-  const response = await fetch(
-    `${BASE_URL}/${id}`,
-    {
-      method: "DELETE",
-    }
-  );
+const token =
+localStorage.getItem("token");
 
 
-  if (!response.ok) {
-    throw new Error("Failed to delete product");
-  }
+const response =
+await fetch(
+`${API_URL}/products/${id}`,
+{
+
+method:"DELETE",
+
+headers:{
+Authorization:`Bearer ${token}`,
+},
+
+}
+);
+
+
+return response.json();
 
 }

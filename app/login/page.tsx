@@ -4,60 +4,40 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
-
 export default function LoginPage() {
-
   const router = useRouter();
-
   const { login } = useAuth();
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [emailOrUsername, setEmailOrUsername] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [error, setError] =
-    useState("");
-
-
-
-  function handleSubmit(
-    e: React.FormEvent
+  async function handleSubmit(
+    e: React.FormEvent<HTMLFormElement>
   ) {
-
     e.preventDefault();
 
+    setError("");
+    setLoading(true);
 
-    const success =
-      login(
-        emailOrUsername,
-        password
-      );
+    try {
+      const success = await login(email, password);
 
-
-
-    if (success) {
-
-      alert("Login successful");
-
-      router.push("/");
-
-    } else {
-
-      setError(
-        "Invalid username/email or password"
-      );
-
+      if (success) {
+        alert("Login successful");
+        router.push("/");
+      } else {
+        setError("Invalid email or password");
+      }
+    } catch (err: any) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
-
   }
 
-
-
   return (
-
     <div
       className="
         min-h-screen
@@ -70,8 +50,6 @@ export default function LoginPage() {
         to-cyan-100
       "
     >
-
-
       <form
         onSubmit={handleSubmit}
         className="
@@ -83,11 +61,7 @@ export default function LoginPage() {
           shadow-xl
         "
       >
-
-
         <div className="text-center mb-8">
-
-
           <div
             className="
               mx-auto
@@ -108,8 +82,6 @@ export default function LoginPage() {
             PM
           </div>
 
-
-
           <h1
             className="
               text-3xl
@@ -121,51 +93,22 @@ export default function LoginPage() {
             Welcome Back
           </h1>
 
-
           <p className="text-slate-500 mt-2">
             Login to your account
           </p>
-
-
         </div>
 
-
-
-
-        {
-          error && (
-
-            <p
-              className="
-                text-red-500
-                text-center
-                mb-4
-              "
-            >
-              {error}
-            </p>
-
-          )
-        }
-
-
-
-
+        {error && (
+          <p className="text-red-500 text-center mb-4">
+            {error}
+          </p>
+        )}
 
         <input
-
-          type="text"
-
-          placeholder="Email or Username"
-
-          value={emailOrUsername}
-
-          onChange={(e)=>
-            setEmailOrUsername(
-              e.target.value
-            )
-          }
-
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="
             w-full
             border
@@ -176,29 +119,14 @@ export default function LoginPage() {
             focus:ring-cyan-400
             outline-none
           "
-
           required
-
         />
 
-
-
-
-
         <input
-
           type="password"
-
           placeholder="Password"
-
           value={password}
-
-          onChange={(e)=>
-            setPassword(
-              e.target.value
-            )
-          }
-
+          onChange={(e) => setPassword(e.target.value)}
           className="
             w-full
             border
@@ -209,19 +137,12 @@ export default function LoginPage() {
             focus:ring-cyan-400
             outline-none
           "
-
           required
-
         />
 
-
-
-
-
         <button
-
           type="submit"
-
+          disabled={loading}
           className="
             w-full
             bg-gradient-to-r
@@ -233,17 +154,11 @@ export default function LoginPage() {
             font-semibold
             hover:scale-105
             transition
+            disabled:opacity-50
           "
-
         >
-
-          Login
-
+          {loading ? "Logging in..." : "Login"}
         </button>
-
-
-
-
 
         <p
           className="
@@ -252,41 +167,21 @@ export default function LoginPage() {
             text-slate-600
           "
         >
-
           Don't have an account?
 
-
           <button
-
             type="button"
-
-            onClick={() =>
-              router.push("/register")
-            }
-
+            onClick={() => router.push("/register")}
             className="
               text-teal-600
               font-semibold
               ml-2
             "
-
           >
-
             Register
-
           </button>
-
-
         </p>
-
-
-
       </form>
-
-
-
     </div>
-
   );
-
 }

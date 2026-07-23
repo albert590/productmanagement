@@ -1,102 +1,82 @@
 import { User } from "@/types/user";
 
-
-const USERS_KEY = "users";
-
-
-
-export function getUsers(): User[] {
-
-  if (typeof window === "undefined") {
-    return [];
-  }
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://ecommerce-api-week4-1.onrender.com";
 
 
-  const data =
-    localStorage.getItem(USERS_KEY);
+// REGISTER
+export async function registerUser(user: {
+  name: string;
+  email: string;
+  password: string;
+}): Promise<User> {
 
-
-  return data
-    ? JSON.parse(data)
-    : [];
-
-}
-
-
-
-
-export function registerUser(
-  user: User
-): boolean {
-
-
-  const users = getUsers();
-
-
-
-  const exists =
-    users.some(
-      (item)=>
-        item.email === user.email ||
-        item.username === user.username
-    );
-
-
-
-  if (exists) {
-
-    return false;
-
-  }
-
-
-
-  users.push(user);
-
-
-
-  localStorage.setItem(
-    USERS_KEY,
-    JSON.stringify(users)
+  const response = await fetch(
+    `${API_URL}/auth/register`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user),
+    }
   );
 
 
+  const data = await response.json();
 
-  return true;
 
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Registration failed"
+    );
+  }
+
+
+  return data.user;
 }
 
 
+// LOGIN
+export async function loginUser(credentials: {
+  email: string;
+  password: string;
+}): Promise<{
+  access_token: string;
+}> {
+
+  const response = await fetch(
+    `${API_URL}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(credentials),
+    }
+  );
 
 
-
-export function loginUser(
-  emailOrUsername: string,
-  password: string
-): User | null {
+  const data = await response.json();
 
 
-  const users = getUsers();
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Login failed"
+    );
+  }
 
 
+  if (typeof window !== "undefined") {
 
-  const user =
-    users.find(
-      (item)=>
-
-        (
-          item.email === emailOrUsername ||
-          item.username === emailOrUsername
-        )
-
-        &&
-
-        item.password === password
-
+    localStorage.setItem(
+      "token",
+      data.access_token
     );
 
+  }
 
 
-  return user || null;
-
+  return data;
 }

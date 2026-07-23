@@ -1,21 +1,20 @@
-"use client";
-
-import ProductForm from "@/components/forms/ProductForm";
+import ProductForm from "@/components/ProductForm";
 
 
 export default function AddProductPage(){
 
-  return (
-    <main>
+return (
 
-      <h1>
-        Add New Product
-      </h1>
+<div>
 
+<h1>
+Add Product
+</h1>
 
-      <ProductForm />
+<ProductForm />
 
-    </main>
-  );
+</div>
+
+);
 
 }

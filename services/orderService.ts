@@ -1,97 +1,214 @@
 import { Order } from "@/types/order";
 
-const ORDERS_KEY = "orders";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://ecommerce-api-week4-1.onrender.com";
 
 
-export function saveOrder(order: Order) {
-  if (typeof window === "undefined") {
-    return;
+// GET ALL ORDERS
+
+export async function getOrders(): Promise<Order[]> {
+
+  const token =
+    localStorage.getItem("token");
+
+
+  const response =
+    await fetch(
+      `${API_URL}/orders`,
+      {
+        headers: {
+          Authorization:
+            `Bearer ${token}`,
+        },
+        cache: "no-store",
+      }
+    );
+
+
+  const data =
+    await response.json();
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      data.message || "Failed to get orders"
+    );
+
   }
 
 
-  const orders: Order[] = JSON.parse(
-    localStorage.getItem(ORDERS_KEY) || "[]"
-  );
+  return data;
 
-
-  orders.push(order);
-
-
-  localStorage.setItem(
-    ORDERS_KEY,
-    JSON.stringify(orders)
-  );
 }
 
 
 
-export function getOrders(): Order[] {
 
-  if (typeof window === "undefined") {
-    return [];
+// CREATE ORDER
+
+export async function saveOrder(
+  order: Partial<Order>
+) {
+
+
+  const token =
+    localStorage.getItem("token");
+
+
+  const response =
+    await fetch(
+      `${API_URL}/orders`,
+      {
+
+        method: "POST",
+
+        headers: {
+
+          "Content-Type":
+            "application/json",
+
+          Authorization:
+            `Bearer ${token}`,
+
+        },
+
+
+        body:
+          JSON.stringify(order),
+
+      }
+    );
+
+
+
+  const data =
+    await response.json();
+
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      data.message || "Order creation failed"
+    );
+
   }
 
 
-  const orders: Order[] = JSON.parse(
-    localStorage.getItem(ORDERS_KEY) || "[]"
-  );
 
+  return data;
 
-  return orders;
 }
 
 
 
-export function updateOrderStatus(
+
+
+// UPDATE ORDER STATUS
+
+export async function updateOrderStatus(
   id: string,
   status: Order["status"]
 ) {
 
-  if (typeof window === "undefined") {
-    return;
+
+  const token =
+    localStorage.getItem("token");
+
+
+  const response =
+    await fetch(
+      `${API_URL}/orders/${id}`,
+      {
+
+        method: "PATCH",
+
+        headers: {
+
+          "Content-Type":
+            "application/json",
+
+          Authorization:
+            `Bearer ${token}`,
+
+        },
+
+
+        body:
+          JSON.stringify({
+            status,
+          }),
+
+      }
+    );
+
+
+
+  const data =
+    await response.json();
+
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      data.message || "Update failed"
+    );
+
   }
 
 
-  const orders = getOrders();
 
+  return data;
 
-  const updatedOrders = orders.map(
-    (order) =>
-      order.id === id
-        ? {
-            ...order,
-            status,
-          }
-        : order
-  );
-
-
-  localStorage.setItem(
-    ORDERS_KEY,
-    JSON.stringify(updatedOrders)
-  );
 }
 
 
 
-export function deleteOrder(id: string) {
-
-  if (typeof window === "undefined") {
-    return;
-  }
 
 
-  const orders = getOrders();
+// DELETE ORDER
+
+export async function deleteOrder(
+  id: string
+) {
 
 
-  const filteredOrders =
-    orders.filter(
-      (order) => order.id !== id
+  const token =
+    localStorage.getItem("token");
+
+
+  const response =
+    await fetch(
+      `${API_URL}/orders/${id}`,
+      {
+
+        method: "DELETE",
+
+        headers: {
+
+          Authorization:
+            `Bearer ${token}`,
+
+        },
+
+      }
     );
 
 
-  localStorage.setItem(
-    ORDERS_KEY,
-    JSON.stringify(filteredOrders)
-  );
+
+  if (!response.ok) {
+
+    const data =
+      await response.json();
+
+    throw new Error(
+      data.message || "Delete failed"
+    );
+
+  }
+
+
 }

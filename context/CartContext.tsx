@@ -10,81 +10,42 @@ import {
 
 import { Product } from "@/types/product";
 
-const CART_STORAGE_KEY =
-  "weekly-product-management-cart";
+import { useAuth } from "./AuthContext";
+
+import {
+  getCart,
+  addToCart as addCartItem,
+  removeFromCart,
+} from "@/services/cart";
 
 
-export interface CartItem extends Product {
+export interface CartItem {
+  product: Product;
   quantity: number;
 }
 
 
 interface CartContextType {
+
   cart: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (id: number) => void;
-  clearCart: () => void;
+
+  addToCart: (
+    product: Product
+  ) => Promise<void>;
+
+  removeItem: (
+    productId: string
+  ) => Promise<void>;
+
+  refreshCart: () => Promise<void>;
+
 }
 
 
-
-const CartContext = createContext<
-  CartContextType | undefined
->(undefined);
-
-
-
-function loadCartFromStorage(): CartItem[] {
-
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-
-  try {
-
-    const item =
-      window.localStorage.getItem(
-        CART_STORAGE_KEY
-      );
-
-
-    return item
-      ? (JSON.parse(item) as CartItem[])
-      : [];
-
-  } catch {
-
-    return [];
-
-  }
-}
-
-
-
-function saveCartToStorage(
-  cart: CartItem[]
-) {
-
-  if (typeof window === "undefined") {
-    return;
-  }
-
-
-  try {
-
-    window.localStorage.setItem(
-      CART_STORAGE_KEY,
-      JSON.stringify(cart)
-    );
-
-  } catch {
-
-    // ignore storage errors
-
-  }
-}
-
+const CartContext =
+  createContext<CartContextType | undefined>(
+    undefined
+  );
 
 
 
@@ -96,79 +57,66 @@ export function CartProvider({
 
 
   const [cart, setCart] =
-    useState<CartItem[]>(
-      () => loadCartFromStorage()
-    );
+    useState<CartItem[]>([]);
+
+
+  const { user } = useAuth();
 
 
 
-  useEffect(() => {
-
-    saveCartToStorage(cart);
-
-  }, [cart]);
+  async function refreshCart() {
 
 
+    if (!user?._id) {
+
+      setCart([]);
+
+      return;
+
+    }
 
 
-  function addToCart(product: Product) {
+
+    try {
 
 
-    setCart((previousCart) => {
-
-
-      const existingProduct =
-        previousCart.find(
-          (item) =>
-            item.id === product.id
+      const data =
+        await getCart(
+          user._id
         );
 
 
 
-      if (existingProduct) {
+      if (Array.isArray(data)) {
 
-        return previousCart.map(
-          (item) =>
-            item.id === product.id
-              ? {
-                  ...item,
-                  quantity:
-                    item.quantity + 1,
-                }
-              : item
-        );
+        setCart(data);
+
+      } 
+      else if (data?.items) {
+
+        setCart(data.items);
+
+      } 
+      else {
+
+        setCart([]);
 
       }
 
 
 
-      return [
-        ...previousCart,
-        {
-          ...product,
-          quantity: 1,
-        },
-      ];
-
-    });
-
-  }
+    } catch(error) {
 
 
+      console.error(
+        "Cart loading error:",
+        error
+      );
 
 
+      setCart([]);
 
-  function removeFromCart(id: number) {
-
-
-    setCart((previousCart) =>
-
-      previousCart.filter(
-        (item) =>
-          item.id !== id
-      )
-
-    );
+    }
 
   }
 
@@ -176,11 +124,118 @@ export function CartProvider({
 
 
 
-  function clearCart() {
+  async function addToCart(
+    product: Product
+  ) {
 
-    setCart([]);
+
+    if (!user?._id) {
+
+      console.log(
+        "Please login first"
+      );
+
+      return;
+
+    }
+
+
+
+    try {
+
+
+      await addCartItem(
+
+        user._id,
+
+        String(product.id),
+
+        1
+
+      );
+
+
+
+      await refreshCart();
+
+
+
+    } catch(error) {
+
+
+      console.error(
+        "Add cart error:",
+        error
+      );
+
+
+    }
 
   }
+
+
+
+
+
+  async function removeItem(
+    productId: string
+  ) {
+
+
+    if (!user?._id) {
+
+      return;
+
+    }
+
+
+
+    try {
+
+
+      await removeFromCart(
+
+        user._id,
+
+        productId
+
+      );
+
+
+
+      await refreshCart();
+
+
+
+    } catch(error) {
+
+
+      console.error(
+        "Remove cart error:",
+        error
+      );
+
+
+    }
+
+  }
+
+
+
+
+
+  useEffect(() => {
+
+
+    if (user?._id) {
+
+      refreshCart();
+
+    }
+
+
+  }, [user]);
+
 
 
 
@@ -189,12 +244,19 @@ export function CartProvider({
   return (
 
     <CartContext.Provider
+
       value={{
+
         cart,
+
         addToCart,
-        removeFromCart,
-        clearCart,
+
+        removeItem,
+
+        refreshCart,
+
       }}
+
     >
 
       {children}
@@ -213,7 +275,9 @@ export function useCart() {
 
 
   const context =
-    useContext(CartContext);
+    useContext(
+      CartContext
+    );
 
 
 

@@ -1,17 +1,13 @@
 export interface User {
 
-  id: string;
+  _id?: string;
 
-  name: string;
-
-  username: string;
+  name?: string;
 
   email: string;
 
-  password: string;
-
   role: "admin" | "customer";
 
-  createdAt: string;
+  createdAt?: string;
 
 }

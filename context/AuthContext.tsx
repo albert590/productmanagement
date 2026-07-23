@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import { User } from "@/types/user";
+
 import {
   loginUser,
   registerUser,
@@ -24,25 +25,25 @@ interface AuthContextType {
   login: (
     email: string,
     password: string
-  ) => boolean;
-
+  ) => Promise<boolean>;
 
   register: (
-    user: User
-  ) => boolean;
-
+    user: {
+      name: string;
+      email: string;
+      password: string;
+    }
+  ) => Promise<boolean>;
 
   logout: () => void;
 
 }
 
 
-
 const AuthContext =
-createContext<AuthContextType | undefined>(
-  undefined
-);
-
+  createContext<AuthContextType | undefined>(
+    undefined
+  );
 
 
 export function AuthProvider({
@@ -57,6 +58,7 @@ export function AuthProvider({
 
 
 
+  // Restore login after refresh
   useEffect(() => {
 
     const savedUser =
@@ -65,7 +67,13 @@ export function AuthProvider({
       );
 
 
-    if (savedUser) {
+    const token =
+      localStorage.getItem(
+        "token"
+      );
+
+
+    if (savedUser && token) {
 
       setUser(
         JSON.parse(savedUser)
@@ -78,64 +86,130 @@ export function AuthProvider({
 
 
 
-
-  function login(
+  async function login(
     email: string,
     password: string
-  ): boolean {
-
-
-    const loggedUser =
-      loginUser(
-        email,
-        password
-      );
-
-
-    if (!loggedUser) {
-
-      return false;
-
-    }
-
-
-    setUser(loggedUser);
-
-
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify(loggedUser)
-    );
-
-
-    return true;
-
-  }
-
-
-
-
-
-  function register(
-    newUser: User
-  ): boolean {
+  ): Promise<boolean> {
 
 
     try {
 
-      registerUser(newUser);
+
+      const data =
+        await loginUser({
+          email,
+          password,
+        });
+
+
+
+      const token =
+        data.access_token;
+
+
+
+      localStorage.setItem(
+        "token",
+        token
+      );
+
+
+
+      // Read JWT payload
+      const payload =
+        JSON.parse(
+          atob(
+            token.split(".")[1]
+          )
+        );
+
+
+
+      const loggedUser: User = {
+
+        _id: payload.id,
+
+        email: payload.email,
+
+        role: payload.role,
+
+      };
+
+
+
+      setUser(
+        loggedUser
+      );
+
+
+
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify(loggedUser)
+      );
+
 
 
       return true;
 
 
-    } catch {
+
+    } catch(error) {
+
+
+      console.error(
+        "Login error:",
+        error
+      );
+
 
       return false;
 
     }
 
   }
+
+
+
+
+
+
+  async function register(
+    newUser: {
+      name: string;
+      email: string;
+      password: string;
+    }
+  ): Promise<boolean> {
+
+
+    try {
+
+
+      await registerUser(
+        newUser
+      );
+
+
+      return true;
+
+
+
+    } catch(error) {
+
+
+      console.error(
+        "Registration error:",
+        error
+      );
+
+
+      return false;
+
+    }
+
+  }
+
 
 
 
@@ -150,6 +224,12 @@ export function AuthProvider({
     localStorage.removeItem(
       "currentUser"
     );
+
+
+    localStorage.removeItem(
+      "token"
+    );
+
 
   }
 
@@ -190,11 +270,14 @@ export function AuthProvider({
 
 
 
+
 export function useAuth() {
 
 
   const context =
-    useContext(AuthContext);
+    useContext(
+      AuthContext
+    );
 
 
 
@@ -205,6 +288,7 @@ export function useAuth() {
     );
 
   }
+
 
 
   return context;

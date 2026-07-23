@@ -1,44 +1,129 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getOrders, updateOrderStatus } from "@/services/orderService";
+
+import {
+  getOrders,
+  updateOrderStatus,
+} from "@/services/orderService";
+
 import { Order } from "@/types/order";
 
 
 export default function AdminOrdersPage() {
 
-  const [orders, setOrders] = useState<Order[]>([]);
+
+  const [orders, setOrders] =
+    useState<Order[]>([]);
 
 
-  useEffect(() => {
-
-    setOrders(getOrders());
-
-  }, []);
+  const [loading, setLoading] =
+    useState(true);
 
 
 
-  function changeStatus(
-    id: string,
-    status: Order["status"]
-  ) {
+  async function loadOrders() {
 
-    updateOrderStatus(id, status);
+    try {
 
-    setOrders(getOrders());
+      const data =
+        await getOrders();
+
+      setOrders(data);
+
+
+    } catch(error) {
+
+      console.error(
+        "Failed to load orders",
+        error
+      );
+
+
+    } finally {
+
+      setLoading(false);
+
+    }
 
   }
 
 
 
 
+  useEffect(() => {
+
+    loadOrders();
+
+  }, []);
+
+
+
+
+
+
+  async function changeStatus(
+    id: string,
+    status: Order["status"]
+  ) {
+
+
+    try {
+
+      await updateOrderStatus(
+        id,
+        status
+      );
+
+
+      await loadOrders();
+
+
+    } catch(error) {
+
+      console.error(
+        "Status update failed",
+        error
+      );
+
+    }
+
+  }
+
+
+
+
+
+
+  if (loading) {
+
+    return (
+
+      <div className="p-6">
+
+        Loading orders...
+
+      </div>
+
+    );
+
+  }
+
+
+
+
+
+
+
   return (
 
-    <main>
+    <main className="p-6">
+
 
       <h1 className="text-3xl font-bold mb-6">
         Orders Management
       </h1>
+
 
 
 
@@ -48,6 +133,7 @@ export default function AdminOrdersPage() {
           No orders available.
         </p>
 
+
       ) : (
 
 
@@ -55,6 +141,7 @@ export default function AdminOrdersPage() {
 
 
           {orders.map((order) => (
+
 
             <div
               key={order.id}
@@ -80,30 +167,35 @@ export default function AdminOrdersPage() {
 
 
 
+
                 <select
+
                   value={order.status}
+
                   onChange={(e)=>
                     changeStatus(
                       order.id,
                       e.target.value as Order["status"]
                     )
                   }
+
                   className="border p-2 rounded"
+
                 >
 
-                  <option>
+                  <option value="Pending">
                     Pending
                   </option>
 
-                  <option>
+                  <option value="Processing">
                     Processing
                   </option>
 
-                  <option>
+                  <option value="Completed">
                     Completed
                   </option>
 
-                  <option>
+                  <option value="Cancelled">
                     Cancelled
                   </option>
 
@@ -112,6 +204,8 @@ export default function AdminOrdersPage() {
 
 
               </div>
+
+
 
 
 
@@ -124,14 +218,15 @@ export default function AdminOrdersPage() {
 
                 {order.products.map(
                   (product)=>(
-                    
+
                     <p
                       key={product.productId}
                       className="text-sm"
                     >
 
                       {product.title}
-                      {" "}x{product.quantity}
+                      {" x "}
+                      {product.quantity}
 
                       {" - $"}
 
@@ -140,6 +235,7 @@ export default function AdminOrdersPage() {
                     </p>
 
                   )
+
                 )}
 
 
@@ -148,13 +244,14 @@ export default function AdminOrdersPage() {
 
 
 
+
               <div className="mt-4 font-bold">
 
-                Total:
-                {" "}
-                ${order.totalAmount}
+                Total: ${order.totalAmount}
 
               </div>
+
+
 
 
 
@@ -167,6 +264,7 @@ export default function AdminOrdersPage() {
                 ).toLocaleDateString()}
 
               </p>
+
 
 
             </div>

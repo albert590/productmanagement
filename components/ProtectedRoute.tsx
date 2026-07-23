@@ -11,6 +11,7 @@ export default function ProtectedRoute({
   children: React.ReactNode;
 }) {
 
+
   const {
     isAuthenticated,
     user,
@@ -18,12 +19,13 @@ export default function ProtectedRoute({
 
 
   const router = useRouter();
-
   const pathname = usePathname();
 
 
 
   const publicRoutes = [
+    "/",
+    "/products",
     "/login",
     "/register",
   ];
@@ -38,36 +40,57 @@ export default function ProtectedRoute({
 
 
 
+  const isPublicRoute =
+    publicRoutes.some((route) =>
+      pathname === route ||
+      pathname.startsWith(route + "/")
+    );
+
+
+
+  const isAdminRoute =
+    adminRoutes.some((route) =>
+      pathname.startsWith(route)
+    );
+
+
+
   useEffect(() => {
 
 
+    // Protect private pages
     if (
       !isAuthenticated &&
-      !publicRoutes.includes(pathname)
+      !isPublicRoute
     ) {
 
-      router.push("/login");
+      router.replace("/login");
+
+      return;
 
     }
 
 
 
+    // Protect admin pages
     if (
       isAuthenticated &&
-      adminRoutes.some((route)=>
-        pathname.startsWith(route)
-      ) &&
+      isAdminRoute &&
       user?.role !== "admin"
     ) {
 
-      router.push("/products");
+      router.replace("/products");
+
+      return;
 
     }
+
 
 
   }, [
     isAuthenticated,
-    pathname,
+    isPublicRoute,
+    isAdminRoute,
     user,
     router,
   ]);
@@ -78,24 +101,23 @@ export default function ProtectedRoute({
 
   if (
     !isAuthenticated &&
-    !publicRoutes.includes(pathname)
+    !isPublicRoute
   ) {
 
     return (
+
       <div className="flex items-center justify-center min-h-screen">
+
         Checking authentication...
+
       </div>
+
     );
 
   }
 
 
 
-
-  return (
-    <>
-      {children}
-    </>
-  );
+  return children;
 
 }
